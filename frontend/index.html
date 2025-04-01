@@ -1,159 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Contract Vulnerability Detector</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.4/web3.min.js"></script>
-    <script defer src="app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Smart Contract Vulnerability Analyzer</title>
+    
+    <!-- Google Fonts for better typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap for modern UI components -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
+        /* Global styles */
         body {
-            background: url("https://www.chainalysis.com/wp-content/uploads/2022/02/bloggraphic-blockchains-01-1.png") no-repeat center center fixed;
-            background-size: cover;
-          
-            /* Text color for better readability */
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 30px;
         }
 
-        * Modern Navbar */ .navbar {
-            background: #0d6efd;
-            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar-brand {
-            color: #fff !important;
-            font-weight: 600;
-            font-size: 20px;
-        }
-
-        .container-box {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            text-align: center;
-            margin: 80px auto;
-        }
-
-        #output {
-            background: #e9ecef;
-            padding: 10px;
-            border-radius: 5px;
-            white-space: pre-wrap;
-            min-height: 50px;
-        }
-
-        .chart-container {
-            margin-top: 20px;
-            width: 100%;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 15px;
-            margin-top: 20px;
+        /* Navbar Styles */
+        .navbar {
             background-color: #343a40;
-            color: white;
+        }
+        .navbar-brand {
+            color: #fff;
+            font-weight: 700;
+        }
+        .navbar-nav .nav-link {
+            color: #ddd;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #fff;
+        }
+
+        /* Form and Button Styles */
+        .form-control, .btn-primary {
+            border-radius: 10px;
+        }
+        .form-control {
+            padding: 15px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Card and Vulnerability Display */
+        .vulnerability-card {
+            margin-bottom: 20px;
+        }
+        .card-body {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer styles */
+        footer {
+            background-color: #343a40;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        /* Loading Spinner */
+        .spinner-border {
+            width: 50px;
+            height: 50px;
+            border-width: 5px;
+        }
+
+        .alert {
+            display: none;
         }
     </style>
 </head>
-
 <body>
 
-    <!-- Modern Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">🔍 Vulnerability Detector</a>
+            <a class="navbar-brand" href="#">Smart Contract Analyzer</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <div class="container-box">
-        <h2 class="mb-2">Smart Contract Vulnerability Detector</h2>
-        <p class="text-muted">Upload a Solidity smart contract file to scan for potential security vulnerabilities.</p>
+    <!-- Main Content -->
+    <div class="container my-5">
+        <h1 class="text-center">Smart Contract Vulnerability Analyzer</h1>
+        
+        <form id="upload-form" enctype="multipart/form-data" class="mb-4">
+            <div class="mb-3">
+                <label for="file-input" class="form-label">Upload Your Smart Contract (.sol)</label>
+                <input type="file" id="file-input" name="contract" accept=".sol" required class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Upload Contract</button>
+        </form>
 
-        <div class="mb-3">
-            <input type="file" id="fileInput" class="form-control" />
+        <div id="loading" class="d-none text-center mb-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Analyzing the contract...</p>
         </div>
-        <button class="btn btn-primary" onclick="checkVulnerabilities()">Analyze</button>
-        <pre id="output" class="mt-3"></pre>
 
-        <!-- Chart Container -->
-        <div class="chart-container">
-            <canvas id="vulnChart"></canvas>
+        <div id="error-message" class="alert alert-danger mb-4">
+            There was an error processing your contract. Please try again.
+        </div>
+
+        <div id="success-message" class="alert alert-success mb-4">
+            Contract analyzed successfully! Vulnerabilities will appear below.
+        </div>
+
+        <div id="vulnerabilities">
+            <!-- Display vulnerabilities here in cards -->
+            <!-- Example: -->
+            <div class="vulnerability-card card">
+                <div class="card-body">
+                    <h5 class="card-title">Reentrancy Attack</h5>
+                    <p class="card-text">A vulnerability where a contract can be called recursively to drain funds.</p>
+                    <a href="#" class="btn btn-warning btn-sm">Learn More</a>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <div class="footer">
-        © 2024 Smart Contract Security Scanner. All Rights Reserved.
-    </div>
+    <!-- <footer>
+        <p>&copy; 2025 Smart Contract Vulnerability Analyzer | All rights reserved.</p>
+        <p><small>Developed by Your Company</small></p>
+    </footer> -->
 
-    <script>
-        function checkVulnerabilities() {
-            const fileInput = document.getElementById("fileInput");
-            const file = fileInput.files[0];
-            if (!file) return alert("Please select a file!");
-
-            const formData = new FormData();
-            formData.append("contract", file);
-
-            fetch("http://localhost:5000/detect", {
-                method: "POST",
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("output").innerText = data.message;
-                    generateChart(data.message);
-                })
-                .catch(error => console.error("Error:", error));
-        }
-
-        function generateChart(message) {
-            let canvasContainer = document.querySelector(".chart-container");
-            let oldCanvas = document.getElementById("vulnChart");
-
-            // Remove old canvas and create a new one to avoid conflicts
-            if (oldCanvas) {
-                oldCanvas.remove();
-            }
-
-            let newCanvas = document.createElement("canvas");
-            newCanvas.id = "vulnChart";
-            canvasContainer.appendChild(newCanvas);
-
-            let ctx = newCanvas.getContext("2d");
-
-            // Categorizing vulnerabilities
-            const vulnerabilities = {
-                "Reentrancy": (message.match(/reentrancy/i) || []).length,
-                "Overflow/Underflow": (message.match(/overflow|underflow/i) || []).length,
-                "Self-Destruct": (message.match(/selfdestruct/i) || []).length,
-                "Uninitialized Storage": (message.match(/uninitialized/i) || []).length,
-                "tx.origin Attack": (message.match(/tx.origin/i) || []).length
-            };
-
-            // Creating a chart with multiple vulnerability categories
-            window.vulnChart = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: Object.keys(vulnerabilities),
-                    datasets: [{
-                        label: "Vulnerability Count",
-                        data: Object.values(vulnerabilities),
-                        backgroundColor: ["#ff0000", "#ff7300", "#ffc107", "#007bff", "#28a745"]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-    </script>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
 </body>
-
 </html>

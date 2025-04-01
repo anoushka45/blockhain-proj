@@ -1,31 +1,39 @@
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("Frontend is connected!");
+// frontend/app.js
+document.getElementById('upload-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    const formData = new FormData();
+    const fileInput = document.getElementById('file-input');
+    formData.append('contract', fileInput.files[0]);
 
-  let ctx = document.getElementById("vulnChart").getContext("2d");
-  let vulnChart = new Chart(ctx, {
-      type: "bar",
-      data: { labels: [], datasets: [{ label: "Vulnerability Count", data: [], backgroundColor: "red" }] },
-      options: { responsive: true }
-  });
-
-  document.querySelector("button").addEventListener("click", async () => {
-      const fileInput = document.getElementById("fileInput");
-      if (!fileInput.files.length) {
-          alert("Please select a file!");
-          return;
-      }
-
-      const formData = new FormData();
-      formData.append("contract", fileInput.files[0]);
-
-      const response = await fetch("http://localhost:5000/detect", { method: "POST", body: formData });
-      const result = await response.json();
-
-      document.getElementById("output").innerText = result.message;
-
-      // Update Chart
-      vulnChart.data.labels = Object.keys(result.vulnerabilities || {});
-      vulnChart.data.datasets[0].data = Object.values(result.vulnerabilities || {});
-      vulnChart.update();
-  });
+    fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayVulnerabilities(data.vulnerabilities);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 });
+
+function displayVulnerabilities(vulnerabilities) {
+    const vulnerabilitiesDiv = document.getElementById('vulnerabilities');
+    vulnerabilitiesDiv.innerHTML = ''; // Clear previous results
+
+    if (vulnerabilities.length === 0) {
+        vulnerabilitiesDiv.innerHTML = 'No vulnerabilities detected.';
+        return;
+    }
+
+    const ul = document.createElement('ul');
+    vulnerabilities.forEach(vuln => {
+        const li = document.createElement('li');
+        li.textContent = vuln;
+        ul.appendChild(li);
+    });
+
+    vulnerabilitiesDiv.appendChild(ul);
+}
