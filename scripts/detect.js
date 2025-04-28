@@ -1,32 +1,43 @@
-// scripts/detect.js
 const detect = {
-    analyze: (contractContent) => {
-      let vulnerabilities = [];
-  
-      // Check for Reentrancy Attack (checks for calls to external contracts)
+  analyze: (contractContent, fileType) => {
+    let vulnerabilities = [];
+
+    if (fileType === 'sol') {
+      // Solidity vulnerability checks
       if (/\.\s*call\(|\.send\(|\.transfer\(/.test(contractContent)) {
-        vulnerabilities.push("Potential Reentrancy Attack: Usage of low-level calls");
+        vulnerabilities.push("Solidity: Potential Reentrancy Attack: Usage of low-level calls.");
       }
-  
-      // Check for gas limit issues (functions without gas optimization)
       if (/function\s+[a-zA-Z0-9_]+\s*\(.+\)\s*public/.test(contractContent)) {
-        vulnerabilities.push("Gas Limit Issue: Public function without gas optimizations.");
+        vulnerabilities.push("Solidity: Gas Limit Issue: Public function without gas optimizations.");
       }
-  
-      // Check for uninitialized storage variables
       if (/\s*storage\s+[a-zA-Z0-9_]+\s*;/.test(contractContent)) {
-        vulnerabilities.push("Uninitialized Storage Variable: A storage variable is declared without being initialized.");
+        vulnerabilities.push("Solidity: Uninitialized Storage Variable detected.");
       }
-  
-      // Check for misuse of the 'now' keyword (deprecated)
-      if (contractContent.includes("now")) {
-        vulnerabilities.push("Deprecation: Use of 'now' instead of 'block.timestamp'");
+      if (/\bnow\b/.test(contractContent)) {
+        vulnerabilities.push("Solidity: Deprecation Warning - use block.timestamp instead of 'now'.");
       }
-  
-      // Return detected vulnerabilities
-      return vulnerabilities;
+    } else if (fileType === 'rs') {
+      // Rust vulnerability checks
+      // Normalize content: Remove extra whitespace
+      const normalizedContent = contractContent.replace(/\s+/g, ' ');
+
+  console.log("Rust contract content:", normalizedContent); // Debugging: Check if content is being passed correctly
+
+  if (/unsafe\s*\{[^}]*\}/g.test(normalizedContent)) {
+    vulnerabilities.push("Rust: Unsafe block detected. Review for potential memory issues.");
+  }
+  if (/\bunwrap\s*\(/g.test(normalizedContent)) {
+    vulnerabilities.push("Rust: Potential panic risk - unwrap() usage detected.");
+  }
+  if (/\bexpect\s*\(/g.test(normalizedContent)) {
+    vulnerabilities.push("Rust: Potential panic risk - expect() usage detected.");
+  }
+    } else {
+      vulnerabilities.push("Unsupported file type or no checks defined for this type.");
     }
-  };
-  
-  module.exports = detect;
-  
+
+    return vulnerabilities;
+  }
+};
+
+module.exports = detect;

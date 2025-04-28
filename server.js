@@ -1,52 +1,26 @@
-// server.js
 const express = require('express');
-const cors = require('cors');
-const multer = require('multer');
-const bodyParser = require('body-parser');
-const path = require('path');
-const detect = require('./scripts/detect'); // Import the vulnerability detection logic
-
+const fileUpload = require('express-fileupload');
+const detect = require('./scripts/detect');
 const app = express();
+const path = require('path');
 
-// Enable CORS for the frontend
-app.use(cors());
+app.use(fileUpload());
+app.use(express.static('frontend')); // Serve frontend files
 
-// Set up body parser for JSON
-app.use(bodyParser.json());
-
-// Set up static files for the frontend
-app.use(express.static(path.join(__dirname, 'frontend')));
-
-// Multer setup to handle file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  }
-});
-
-const upload = multer({ storage: storage });
-
-// API to upload the .sol file
-app.post('/upload', upload.single('contract'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send('No file uploaded');
+app.post('/analyze', (req, res) => {
+  if (!req.files || !req.files.contract) {
+    return res.status(400).send('No file uploaded.');
   }
 
-  // Call the vulnerability detection logic
-  const contractContent = require('fs').readFileSync(req.file.path, 'utf8');
-  const vulnerabilities = detect.analyze(contractContent);
+  const file = req.files.contract;
+  const content = file.data.toString('utf8');
+  const ext = path.extname(file.name).slice(1); // Get extension without dot
 
-  res.json({
-    message: 'File uploaded and analyzed successfully!',
-    vulnerabilities: vulnerabilities
-  });
+  const vulnerabilities = detect.analyze(content, ext);
+
+  res.json({ vulnerabilities, fileType: ext });
 });
 
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
 });

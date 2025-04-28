@@ -1,165 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Contract Vulnerability Analyzer</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Contract Vulnerability Analyzer</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+
+  <style>
+    /* Page Background */
+    body {
+      background: url('https://images.unsplash.com/photo-1643000867361-cd545336249b?q=80&w=2081&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Roboto', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Overlay */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 0;
+    }
+
     
-    <!-- Google Fonts for better typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap for modern UI components -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-        /* Global styles */
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f8f9fa;
-        }
-        h1 {
-            font-size: 2.5rem;
-            color: #333;
-            margin-bottom: 30px;
-        }
+    .main-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding-top: 80px;
+    }
 
-        /* Navbar Styles */
-        .navbar {
-            background-color: #343a40;
-        }
-        .navbar-brand {
-            color: #fff;
-            font-weight: 700;
-        }
-        .navbar-nav .nav-link {
-            color: #ddd;
-        }
-        .navbar-nav .nav-link:hover {
-            color: #fff;
-        }
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #cdcaff;
+      margin-bottom: 20px;
+    }
 
-        /* Form and Button Styles */
-        .form-control, .btn-primary {
-            border-radius: 10px;
-        }
-        .form-control {
-            padding: 15px;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border: none;
-            padding: 15px 25px;
-            font-size: 1.2rem;
-            transition: background-color 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
+    .icon-row {
+      margin-bottom: 30px;
+    }
 
-        /* Card and Vulnerability Display */
-        .vulnerability-card {
-            margin-bottom: 20px;
-        }
-        .card-body {
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    .icon-row img {
+      width: 70px;
+      height: 70px;
+      margin: 0 10px;
+      transition: transform 0.3s ease;
+    }
 
-        /* Footer styles */
-        footer {
-            background-color: #343a40;
-            color: #fff;
-            padding: 20px 0;
-            text-align: center;
-        }
+    .icon-row img:hover {
+      transform: scale(1.2);
+    }
 
-        /* Loading Spinner */
-        .spinner-border {
-            width: 50px;
-            height: 50px;
-            border-width: 5px;
-        }
+    .form-container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(10px);
+    }
 
-        .alert {
-            display: none;
-        }
-    </style>
+    .form-label {
+      color: #ddd;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, #6a11cb, #2575fc);
+      border: none;
+      transition: background 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(45deg, #ff512f, #dd2476);
+    }
+
+    /* Spinner and Alerts */
+    #loading p, #error-message, #success-message {
+      color: #fff;
+    }
+
+    /* Footer */
+    footer {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      color: #aaa;
+      font-size: 14px;
+      z-index: 1;
+    }
+
+    .intro{
+        color: rgb(203, 196, 196);
+    }
+  </style>
 </head>
+
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">Smart Contract Analyzer</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+  <!-- Navbar -->
+  
 
-    <!-- Main Content -->
-    <div class="container my-5">
-        <h1 class="text-center">Smart Contract Vulnerability Analyzer</h1>
-        
-        <form id="upload-form" enctype="multipart/form-data" class="mb-4">
-            <div class="mb-3">
-                <label for="file-input" class="form-label">Upload Your Smart Contract (.sol)</label>
-                <input type="file" id="file-input" name="contract" accept=".sol" required class="form-control" />
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Upload Contract</button>
-        </form>
+  <!-- Main Content -->
+  <div class="container main-content">
+    <h1>Smart Contract Vulnerability Analyzer</h1>
+  
+    <h6 class="intro">The Smart Contract Vulnerability Analyzer is a tool designed to help developers identify and analyze vulnerabilities in their smart contract code. Supporting both Solidity (.sol) and Rust (.rs) file types, this tool scans contracts for potential issues and
+         provides insights on common security risks, 
+         helping developers ensure their contracts are secure before deployment.</h6>
 
-        <div id="loading" class="d-none text-center mb-4">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p>Analyzing the contract...</p>
+         <hr>
+         <br>
+    <!-- Icons Row -->
+    <div class="icon-row d-flex justify-content-center align-items-center">
+      <img src="https://img.icons8.com/?size=512&id=HOqGCOyHDbd4&format=png" alt="Solidity Icon">
+      <img src="https://icons.veryicon.com/png/o/business/vscode-program-item-icon/rust-1.png" alt="Rust Icon" style="background:white; border-radius:50%; padding:5px;">
+    </div>
+  
+    <!-- Form Container -->
+    <div class="form-container mx-auto" style="max-width: 600px;">
+      <form id="upload-form" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="file-input" class="form-label">Upload Your Smart Contract (.sol, .rs)</label>
+          <input type="file" id="file-input" name="contract" accept=".sol,.rs" required class="form-control" />
         </div>
+        <button type="submit" id="upload-button" class="btn btn-primary w-100">Upload Contract</button>
+      </form>
+  
+      <div id="loading" class="d-none text-center my-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Analyzing the contract...</p>
+      </div>
+  
+      <div id="error-message" class="alert alert-danger my-4 d-none">
+        There was an error processing your contract. Please try again.
+      </div>
+  
+      <div id="success-message" class="alert alert-success my-4 d-none text-dark">
+        Contract analyzed successfully! Vulnerabilities will appear below.
+      </div>
+  
+      <div id="vulnerabilities" class="mt-4"></div>
+      <canvas id="vulnChart" width="400" height="200"></canvas>
 
-        <div id="error-message" class="alert alert-danger mb-4">
-            There was an error processing your contract. Please try again.
-        </div>
+    </div>
+  
 
-        <div id="success-message" class="alert alert-success mb-4">
-            Contract analyzed successfully! Vulnerabilities will appear below.
-        </div>
 
-        <div id="vulnerabilities">
-            <!-- Display vulnerabilities here in cards -->
-            <!-- Example: -->
-            <div class="vulnerability-card card">
-                <div class="card-body">
-                    <h5 class="card-title">Reentrancy Attack</h5>
-                    <p class="card-text">A vulnerability where a contract can be called recursively to drain funds.</p>
-                    <a href="#" class="btn btn-warning btn-sm">Learn More</a>
-                </div>
-            </div>
-        </div>
+    <!-- Previously Uploaded Files -->
+    <div class="container mt-5">
+      <h2>Previously Uploaded Files</h2>
+      <div id="uploaded-files" class="row row-cols-1 row-cols-md-3 g-4">
+      </div>
     </div>
 
-    <!-- Footer -->
-    <!-- <footer>
-        <p>&copy; 2025 Smart Contract Vulnerability Analyzer | All rights reserved.</p>
-        <p><small>Developed by Your Company</small></p>
-    </footer> -->
+<br>
+<br>
+    <button onclick="clearLocalStorage()">Clear Local Storage</button>
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="app.js"></script>
+  </div>
+  
+
+  
+
+
+
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+  
 </body>
-</html>
+</html> 
